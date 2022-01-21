@@ -1,8 +1,7 @@
-# React Google Calendar Events App
+# React Calendar Events App
 
 creating an app that will take user input and create a google calendar event that can be accepted and added to your google Calendar.
 
-utilizes [Google Calendar](https://developers.google.com/calendar)
 
 <details>
 <summary>custom React Scaffolding</summary>
