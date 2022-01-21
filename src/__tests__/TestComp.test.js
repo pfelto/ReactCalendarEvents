@@ -3,7 +3,7 @@ import { TestComp } from "../components/TestComp";
 import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
-test("TestComp should render with expected title passed in", () => {
+test("TestComp should render with expected title passed in as testid", () => {
   render(<TestComp title="Paul" />);
 
   screen.getByTestId("Paul");
