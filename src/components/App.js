@@ -4,37 +4,157 @@ import { ICalendar } from "datebook";
 
 const emptyCalendar = {
   title: "",
-  description: null,
+  description: "",
   location: "",
   start: "",
-  end: null,
+  end: "",
+  //recurrence is not supported in Yahoo or Outlook calendars using dateBook
   recurrence: {
-    frequency: null,
-    interval: null,
-    count: null,
+    frequency: "DAILY",
+    interval: 1,
+    count: 1,
+    /*
+    Addd these later as it adds more complexity
+    end: null,
+    weekdays: null,
     monthdays: null,
     weekstart: null,
+    */
   },
+  allDay: true,
+  recurring: false,
 };
 
 export const App = () => {
   const [calendarEvent, setCalendarEvent] = useState(emptyCalendar);
 
   function createICS(event) {
-    const config = {
-      title: event.title,
-      location: event.location,
-      description: "Let's blow off some steam with a tall cold one!",
-      start: new Date(event.start),
-      end: new Date(event.start),
-      // an event that recurs every two weeks:
-    };
+    let config = {};
+    if (event.allDay) {
+      if (event.recurring) {
+        config = {
+          title: event.title,
+          location: event.location,
+          description: event.description,
+          start: new Date(event.start),
+          end: new Date(event.start),
+          // an event that recurs every two weeks:
+          recurrence: {
+            frequency: event.recurrence.frequency,
+            interval: event.recurrence.interval,
+            count: event.recurrence.count,
+            /*
+          count: null,
+          Addd these later as it adds more complexity
+          end: null,
+          weekdays: null,
+          monthdays: null,
+          weekstart: null,
+          */
+          },
+        };
+      } else {
+        config = {
+          title: event.title,
+          location: event.location,
+          description: event.description,
+          start: new Date(event.start),
+          end: new Date(event.start),
+        };
+      }
+    } else {
+      if (event.recurring) {
+        config = {
+          title: event.title,
+          location: event.location,
+          description: event.description,
+          start: new Date(event.start),
+          end: new Date(event.end),
+          // an event that recurs every two weeks:
+          recurrence: {
+            frequency: event.recurrence.frequency,
+            interval: event.recurrence.interval,
+            count: event.recurrence.count,
+            /*
+            interval: null,
+            count: null,
+            Addd these later as it adds more complexity
+            end: null,
+            weekdays: null,
+            monthdays: null,
+            weekstart: null,
+            */
+          },
+        };
+      } else {
+        config = {
+          title: event.title,
+          location: event.location,
+          description: event.description,
+          start: new Date(event.start),
+          end: new Date(event.end),
+        };
+      }
+    }
+
     console.log(event);
 
     const icalendar = new ICalendar(config);
 
     icalendar.download();
   }
+
+  const recurringMarkup = (
+    <div>
+      <div>
+        <h6>frequency</h6>
+        <label htmlFor="frequncy">Repeat this event</label>
+        <select
+          id="frequncy"
+          value={calendarEvent.recurrence.frequency}
+          onChange={(e) => {
+            let newObject = JSON.parse(JSON.stringify(calendarEvent));
+            newObject.recurrence.frequency = e.target.value;
+            setCalendarEvent(newObject);
+          }}
+        >
+          <option value="DAILY">DAILY</option>
+          <option value="WEEKLY">WEEKLY</option>
+          <option value="MONTHLY">MONTHLY</option>
+          <option value="YEARLY">YEARLY</option>
+        </select>
+      </div>
+      <div>
+        <h6>Interval</h6>
+        <label htmlFor="interval">Repeat every</label>
+        <input
+          id="interval"
+          type="number"
+          value={calendarEvent.recurrence.interval}
+          onChange={(e) => {
+            let newObject = JSON.parse(JSON.stringify(calendarEvent));
+            newObject.recurrence.interval = e.target.value;
+            setCalendarEvent(newObject);
+          }}
+        ></input>
+      </div>
+      <div>
+        <h6>Count</h6>
+        <label htmlFor="count">Repeat for a number of occurrences</label>
+        <input
+          id="count"
+          type="number"
+          value={calendarEvent.recurrence.count}
+          onChange={(e) => {
+            let newObject = JSON.parse(JSON.stringify(calendarEvent));
+            newObject.recurrence.count = e.target.value;
+            setCalendarEvent(newObject);
+          }}
+        ></input>
+      </div>
+    </div>
+  );
+
   return (
     <div className="App">
       <div className="header">
@@ -99,18 +219,51 @@ export const App = () => {
                 required
               ></input>
               <div>
-                <input id="allday" type="checkbox" defaultChecked></input>
+                <input
+                  id="allday"
+                  type="checkbox"
+                  checked={calendarEvent.allDay}
+                  onChange={() =>
+                    setCalendarEvent((calendarEvent) => ({
+                      ...calendarEvent,
+                      allDay: !calendarEvent.allDay,
+                    }))
+                  }
+                ></input>
                 <label htmlFor="allday">All Day Event</label>
               </div>
             </div>
             <div className="dates">
               <label htmlFor="eDate">End Date</label>
-              <input id="eDate" type="datetime-local"></input>
+              <input
+                id="eDate"
+                type="datetime-local"
+                value={calendarEvent.end}
+                onChange={(e) =>
+                  setCalendarEvent((calendarEvent) => ({
+                    ...calendarEvent,
+                    end: e.target.value,
+                  }))
+                }
+                disabled={calendarEvent.allDay}
+                required={calendarEvent.allDay ? false : true}
+              ></input>
             </div>
           </div>
           <div>
-            <input id="recurring" type="checkbox"></input>
+            <input
+              id="recurring"
+              type="checkbox"
+              checked={calendarEvent.recurring}
+              onChange={() =>
+                setCalendarEvent((calendarEvent) => ({
+                  ...calendarEvent,
+                  recurring: !calendarEvent.recurring,
+                }))
+              }
+            ></input>
             <label htmlFor="recurring">Recurring Event</label>
+            {calendarEvent.recurring ? recurringMarkup : null}
           </div>
           <button type="submit">Create Calendar Event</button>
         </form>
