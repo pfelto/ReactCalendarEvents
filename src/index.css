@@ -11,7 +11,8 @@ body {
   flex-direction: column;
   align-items: center;
   background-color: lightgray;
-  padding-top: 25px;
+  padding-top: 15px;
+  padding-bottom: 15px;
   height: 100vh;
   border: 1px solid red;
 }
@@ -46,7 +47,24 @@ section form * {
   padding: 2px;
 }
 
+.recurring {
+  display: flex;
+  flex: 1 0;
+  flex-direction: column;
+  padding: 0;
+}
+
+.recurring div {
+  padding: 0;
+}
+
+.recurring div h5 {
+  margin-block-start: 0.67em;
+  margin-block-end: 0.67em;
+}
+
 section form button {
+  margin-top: 10px;
   align-self: center;
 }
 
@@ -63,5 +81,11 @@ section form button {
 @media only screen and (max-width: 900px) {
   .dateSection {
     display: block;
+  }
+}
+
+@media only screen and (max-height: 730px) {
+  .App {
+    height: 100%;
   }
 }

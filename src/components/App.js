@@ -105,9 +105,9 @@ export const App = () => {
   }
 
   const recurringMarkup = (
-    <div>
+    <div className="recurring">
       <div>
-        <h6>frequency</h6>
+        <h5>Frequency</h5>
         <label htmlFor="frequncy">Repeat this event</label>
         <select
           id="frequncy"
@@ -125,7 +125,7 @@ export const App = () => {
         </select>
       </div>
       <div>
-        <h6>Interval</h6>
+        <h5>Interval</h5>
         <label htmlFor="interval">Repeat every</label>
         <input
           id="interval"
@@ -139,7 +139,7 @@ export const App = () => {
         ></input>
       </div>
       <div>
-        <h6>Count</h6>
+        <h5>Count</h5>
         <label htmlFor="count">Repeat for a number of occurrences</label>
         <input
           id="count"
