@@ -1,36 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
-import { ICalendar } from "datebook";
-
-const emptyCalendar = {
-  title: "",
-  description: "",
-  location: "",
-  start: "",
-  end: "",
-  //recurrence is not supported in Yahoo or Outlook calendars using dateBook
-  recurrence: {
-    frequency: "DAILY",
-    interval: 1,
-    count: 1,
-    /*
-    Addd these later as it adds more complexity
-    end: null,
-    weekdays: null,
-    monthdays: null,
-    weekstart: null,
-    */
-  },
-  allDay: true,
-  recurring: false,
-};
-
-const STATUS = {
-  IDLE: "IDLE",
-  PENDING: "PENDING",
-  RESOLVED: "RESOLVED",
-  REJECTED: "REJECTED",
-};
+import { emptyCalendar, STATUS, createICS } from "../utils";
 
 export const App = () => {
   const [calendarEvent, setCalendarEvent] = useState(emptyCalendar);
@@ -40,82 +10,6 @@ export const App = () => {
   //derived State
   const errors = getErrors(calendarEvent);
   const isValid = Object.keys(errors).length === 0;
-  console.log(errors);
-  console.log(isValid);
-
-  function createICS(event) {
-    let config = {};
-    if (event.allDay) {
-      if (event.recurring) {
-        config = {
-          title: event.title,
-          location: event.location,
-          description: event.description,
-          start: new Date(event.start),
-          end: new Date(event.start),
-          // an event that recurs every two weeks:
-          recurrence: {
-            frequency: event.recurrence.frequency,
-            interval: event.recurrence.interval,
-            count: event.recurrence.count,
-            /*
-          count: null,
-          Addd these later as it adds more complexity
-          end: null,
-          weekdays: null,
-          monthdays: null,
-          weekstart: null,
-          */
-          },
-        };
-      } else {
-        config = {
-          title: event.title,
-          location: event.location,
-          description: event.description,
-          start: new Date(event.start),
-          end: new Date(event.start),
-        };
-      }
-    } else {
-      if (event.recurring) {
-        config = {
-          title: event.title,
-          location: event.location,
-          description: event.description,
-          start: new Date(event.start),
-          end: new Date(event.end),
-          // an event that recurs every two weeks:
-          recurrence: {
-            frequency: event.recurrence.frequency,
-            interval: event.recurrence.interval,
-            count: event.recurrence.count,
-            /*
-            interval: null,
-            count: null,
-            Addd these later as it adds more complexity
-            end: null,
-            weekdays: null,
-            monthdays: null,
-            weekstart: null,
-            */
-          },
-        };
-      } else {
-        config = {
-          title: event.title,
-          location: event.location,
-          description: event.description,
-          start: new Date(event.start),
-          end: new Date(event.end),
-        };
-      }
-    }
-
-    const icalendar = new ICalendar(config);
-
-    icalendar.download();
-  }
 
   function getErrors(calendarEventObject) {
     const result = {};
@@ -127,20 +21,51 @@ export const App = () => {
     return result;
   }
 
+  function handleChange(e) {
+    setCalendarEvent((calendarEvent) => ({
+      ...calendarEvent,
+      [e.target.id]: e.target.value,
+    }));
+  }
+
+  function handleCheckboxChange(e) {
+    setCalendarEvent((calendarEvent) => ({
+      ...calendarEvent,
+      [e.target.id]: e.target.checked,
+    }));
+  }
+
+  function handleNestedChange(e) {
+    let newObject = { ...calendarEvent };
+    newObject.recurrence = { ...calendarEvent.recurrence };
+    newObject.recurrence[e.target.id] = e.target.value;
+    setCalendarEvent(newObject);
+  }
+
+  function handleBlur(e) {
+    setTouched((cur) => ({ ...cur, [e.target.id]: true }));
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setStatus(STATUS.PENDING);
+    if (!isValid) {
+      setStatus(STATUS.REJECTED);
+      return;
+    }
+    setStatus(STATUS.RESOLVED);
+    createICS(calendarEvent);
+  }
+
   const recurringMarkup = (
     <div className="recurring">
       <div>
         <h5>Frequency</h5>
-        <label htmlFor="frequncy">Repeat this event</label>
+        <label htmlFor="frequency">Repeat this event</label>
         <select
-          id="frequncy"
+          id="frequency"
           value={calendarEvent.recurrence.frequency}
-          onChange={(e) => {
-            let newObject = { ...calendarEvent };
-            newObject.recurrence = { ...calendarEvent.recurrence };
-            newObject.recurrence.frequency = e.target.value;
-            setCalendarEvent(newObject);
-          }}
+          onChange={handleNestedChange}
         >
           <option value="DAILY">DAILY</option>
           <option value="WEEKLY">WEEKLY</option>
@@ -155,12 +80,8 @@ export const App = () => {
           id="interval"
           type="number"
           value={calendarEvent.recurrence.interval}
-          onChange={(e) => {
-            let newObject = { ...calendarEvent };
-            newObject.recurrence = { ...calendarEvent.recurrence };
-            newObject.recurrence.interval = e.target.value;
-            setCalendarEvent(newObject);
-          }}
+          onChange={handleNestedChange}
+          min={1}
         ></input>
       </div>
       <div>
@@ -170,12 +91,8 @@ export const App = () => {
           id="count"
           type="number"
           value={calendarEvent.recurrence.count}
-          onChange={(e) => {
-            let newObject = { ...calendarEvent };
-            newObject.recurrence = { ...calendarEvent.recurrence };
-            newObject.recurrence.count = e.target.value;
-            setCalendarEvent(newObject);
-          }}
+          onChange={handleNestedChange}
+          min={1}
         ></input>
       </div>
     </div>
@@ -197,107 +114,62 @@ export const App = () => {
             </ul>
           </div>
         ) : null}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setStatus(STATUS.PENDING);
-            if (!isValid) {
-              setStatus(STATUS.REJECTED);
-              return;
-            }
-            setStatus(STATUS.RESOLVED);
-            createICS(calendarEvent);
-          }}
-        >
+        <form onSubmit={handleSubmit}>
           <label htmlFor="title">Event Title</label>
           <input
             id="title"
             type="text"
             value={calendarEvent.title}
-            onChange={(e) =>
-              setCalendarEvent((calendarEvent) => ({
-                ...calendarEvent,
-                title: e.target.value,
-              }))
-            }
+            onChange={handleChange}
           ></input>
           <label htmlFor="location">Event Location</label>
           <input
             id="location"
             type="text"
             value={calendarEvent.location}
-            onChange={(e) =>
-              setCalendarEvent((calendarEvent) => ({
-                ...calendarEvent,
-                location: e.target.value,
-              }))
-            }
+            onChange={handleChange}
           ></input>
-          <label htmlFor="desc">Event Description</label>
+          <label htmlFor="description">Event Description</label>
           <textarea
-            id="desc"
+            id="description"
             style={{ resize: "none" }}
             value={calendarEvent.description}
-            onChange={(e) =>
-              setCalendarEvent((calendarEvent) => ({
-                ...calendarEvent,
-                description: e.target.value,
-              }))
-            }
+            onChange={handleChange}
           ></textarea>
           <div className="dateSection">
             <div className="dates">
-              <label htmlFor="sDate">Start Date</label>
+              <label htmlFor="start">Start Date</label>
               <input
-                id="sDate"
+                id="start"
                 type="datetime-local"
                 value={calendarEvent.start}
-                onChange={(e) =>
-                  setCalendarEvent((calendarEvent) => ({
-                    ...calendarEvent,
-                    start: e.target.value,
-                  }))
-                }
-                onBlur={(e) =>
-                  setTouched((cur) => ({ ...cur, [e.target.id]: true }))
-                }
+                onChange={handleChange}
+                onBlur={handleBlur}
               ></input>
-              {touched.sDate === true ? (
+              {touched.start === true ? (
                 <div className="alert">{errors.start}</div>
               ) : null}
               <div>
                 <input
-                  id="allday"
+                  id="allDay"
                   type="checkbox"
                   checked={calendarEvent.allDay}
-                  onChange={() =>
-                    setCalendarEvent((calendarEvent) => ({
-                      ...calendarEvent,
-                      allDay: !calendarEvent.allDay,
-                    }))
-                  }
+                  onChange={handleCheckboxChange}
                 ></input>
-                <label htmlFor="allday">All Day Event</label>
+                <label htmlFor="allDay">All Day Event</label>
               </div>
             </div>
             <div className="dates">
-              <label htmlFor="eDate">End Date</label>
+              <label htmlFor="end">End Date</label>
               <input
-                id="eDate"
+                id="end"
                 type="datetime-local"
                 value={calendarEvent.end}
-                onChange={(e) =>
-                  setCalendarEvent((calendarEvent) => ({
-                    ...calendarEvent,
-                    end: e.target.value,
-                  }))
-                }
-                onBlur={(e) =>
-                  setTouched((cur) => ({ ...cur, [e.target.id]: true }))
-                }
+                onChange={handleChange}
+                onBlur={handleBlur}
                 disabled={calendarEvent.allDay}
               ></input>
-              {touched.eDate === true ? (
+              {touched.end === true ? (
                 <div className="alert">{errors.end}</div>
               ) : null}
             </div>
@@ -307,12 +179,7 @@ export const App = () => {
               id="recurring"
               type="checkbox"
               checked={calendarEvent.recurring}
-              onChange={() =>
-                setCalendarEvent((calendarEvent) => ({
-                  ...calendarEvent,
-                  recurring: !calendarEvent.recurring,
-                }))
-              }
+              onChange={handleCheckboxChange}
             ></input>
             <label htmlFor="recurring">Recurring Event</label>
             {calendarEvent.recurring ? recurringMarkup : null}
