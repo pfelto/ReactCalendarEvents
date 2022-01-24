@@ -25,8 +25,23 @@ const emptyCalendar = {
   recurring: false,
 };
 
+const STATUS = {
+  IDLE: "IDLE",
+  PENDING: "PENDING",
+  RESOLVED: "RESOLVED",
+  REJECTED: "REJECTED",
+};
+
 export const App = () => {
   const [calendarEvent, setCalendarEvent] = useState(emptyCalendar);
+  const [status, setStatus] = useState(STATUS.IDLE);
+  const [touched, setTouched] = useState({});
+
+  //derived State
+  const errors = getErrors(calendarEvent);
+  const isValid = Object.keys(errors).length === 0;
+  console.log(errors);
+  console.log(isValid);
 
   function createICS(event) {
     let config = {};
@@ -97,11 +112,19 @@ export const App = () => {
       }
     }
 
-    console.log(event);
-
     const icalendar = new ICalendar(config);
 
     icalendar.download();
+  }
+
+  function getErrors(calendarEventObject) {
+    const result = {};
+    if (calendarEventObject.start === "")
+      result.start = "Start Date is required";
+    if (!calendarEventObject.allDay) {
+      if (calendarEventObject.end === "") result.end = "End Date is required";
+    }
+    return result;
   }
 
   const recurringMarkup = (
@@ -113,7 +136,8 @@ export const App = () => {
           id="frequncy"
           value={calendarEvent.recurrence.frequency}
           onChange={(e) => {
-            let newObject = JSON.parse(JSON.stringify(calendarEvent));
+            let newObject = { ...calendarEvent };
+            newObject.recurrence = { ...calendarEvent.recurrence };
             newObject.recurrence.frequency = e.target.value;
             setCalendarEvent(newObject);
           }}
@@ -132,7 +156,8 @@ export const App = () => {
           type="number"
           value={calendarEvent.recurrence.interval}
           onChange={(e) => {
-            let newObject = JSON.parse(JSON.stringify(calendarEvent));
+            let newObject = { ...calendarEvent };
+            newObject.recurrence = { ...calendarEvent.recurrence };
             newObject.recurrence.interval = e.target.value;
             setCalendarEvent(newObject);
           }}
@@ -146,7 +171,8 @@ export const App = () => {
           type="number"
           value={calendarEvent.recurrence.count}
           onChange={(e) => {
-            let newObject = JSON.parse(JSON.stringify(calendarEvent));
+            let newObject = { ...calendarEvent };
+            newObject.recurrence = { ...calendarEvent.recurrence };
             newObject.recurrence.count = e.target.value;
             setCalendarEvent(newObject);
           }}
@@ -161,9 +187,25 @@ export const App = () => {
         <h1>Calendar Event Details</h1>
       </div>
       <section>
+        {!isValid && status === STATUS.REJECTED ? (
+          <div className="alert">
+            <p>Please fix the following errors:</p>
+            <ul>
+              {Object.keys(errors).map((key) => {
+                return <li key={key}>{errors[key]}</li>;
+              })}
+            </ul>
+          </div>
+        ) : null}
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            setStatus(STATUS.PENDING);
+            if (!isValid) {
+              setStatus(STATUS.REJECTED);
+              return;
+            }
+            setStatus(STATUS.RESOLVED);
             createICS(calendarEvent);
           }}
         >
@@ -216,8 +258,13 @@ export const App = () => {
                     start: e.target.value,
                   }))
                 }
-                required
+                onBlur={(e) =>
+                  setTouched((cur) => ({ ...cur, [e.target.id]: true }))
+                }
               ></input>
+              {touched.sDate === true ? (
+                <div className="alert">{errors.start}</div>
+              ) : null}
               <div>
                 <input
                   id="allday"
@@ -245,9 +292,14 @@ export const App = () => {
                     end: e.target.value,
                   }))
                 }
+                onBlur={(e) =>
+                  setTouched((cur) => ({ ...cur, [e.target.id]: true }))
+                }
                 disabled={calendarEvent.allDay}
-                required={calendarEvent.allDay ? false : true}
               ></input>
+              {touched.eDate === true ? (
+                <div className="alert">{errors.end}</div>
+              ) : null}
             </div>
           </div>
           <div>
@@ -265,7 +317,9 @@ export const App = () => {
             <label htmlFor="recurring">Recurring Event</label>
             {calendarEvent.recurring ? recurringMarkup : null}
           </div>
-          <button type="submit">Create Calendar Event</button>
+          <button type="submit" disabled={status === STATUS.PENDING}>
+            Create Calendar Event
+          </button>
         </form>
       </section>
     </div>

@@ -78,6 +78,10 @@ section form button {
   flex-direction: column;
 }
 
+.alert {
+  color: red;
+}
+
 @media only screen and (max-width: 900px) {
   .dateSection {
     display: block;
