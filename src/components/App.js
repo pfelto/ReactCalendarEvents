@@ -1,6 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
+import { ErrorBoundary } from "../ErrorBoundary";
 import { emptyCalendar, STATUS, createICS } from "../utils";
+import { OneInputAndSubmitForm } from "./OneInputAndSubmitForm";
 
 export const App = () => {
   const [calendarEvent, setCalendarEvent] = useState(emptyCalendar);
@@ -114,80 +116,82 @@ export const App = () => {
             </ul>
           </div>
         ) : null}
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="title">Event Title</label>
-          <input
-            id="title"
-            type="text"
-            value={calendarEvent.title}
-            onChange={handleChange}
-          ></input>
-          <label htmlFor="location">Event Location</label>
-          <input
-            id="location"
-            type="text"
-            value={calendarEvent.location}
-            onChange={handleChange}
-          ></input>
-          <label htmlFor="description">Event Description</label>
-          <textarea
-            id="description"
-            style={{ resize: "none" }}
-            value={calendarEvent.description}
-            onChange={handleChange}
-          ></textarea>
-          <div className="dateSection">
-            <div className="dates">
-              <label htmlFor="start">Start Date</label>
-              <input
-                id="start"
-                type="datetime-local"
-                value={calendarEvent.start}
-                onChange={handleChange}
-                onBlur={handleBlur}
-              ></input>
-              {touched.start === true ? (
-                <div className="alert">{errors.start}</div>
-              ) : null}
-              <div>
+        <ErrorBoundary>
+          <OneInputAndSubmitForm handleSubmit={handleSubmit}>
+            <label htmlFor="title">Event Title</label>
+            <input
+              id="title"
+              type="text"
+              value={calendarEvent.title}
+              onChange={handleChange}
+            ></input>
+            <label htmlFor="location">Event Location</label>
+            <input
+              id="location"
+              type="text"
+              value={calendarEvent.location}
+              onChange={handleChange}
+            ></input>
+            <label htmlFor="description">Event Description</label>
+            <textarea
+              id="description"
+              style={{ resize: "none" }}
+              value={calendarEvent.description}
+              onChange={handleChange}
+            ></textarea>
+            <div className="dateSection">
+              <div className="dates">
+                <label htmlFor="start">Start Date</label>
                 <input
-                  id="allDay"
-                  type="checkbox"
-                  checked={calendarEvent.allDay}
-                  onChange={handleCheckboxChange}
+                  id="start"
+                  type="datetime-local"
+                  value={calendarEvent.start}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
                 ></input>
-                <label htmlFor="allDay">All Day Event</label>
+                {touched.start === true ? (
+                  <div className="alert">{errors.start}</div>
+                ) : null}
+                <div>
+                  <input
+                    id="allDay"
+                    type="checkbox"
+                    checked={calendarEvent.allDay}
+                    onChange={handleCheckboxChange}
+                  ></input>
+                  <label htmlFor="allDay">All Day Event</label>
+                </div>
+              </div>
+              <div className="dates">
+                <label htmlFor="end">End Date</label>
+                <input
+                  id="end"
+                  type="datetime-local"
+                  value={calendarEvent.end}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  disabled={calendarEvent.allDay}
+                ></input>
+                {touched.end === true ? (
+                  <div className="alert">{errors.end}</div>
+                ) : null}
               </div>
             </div>
-            <div className="dates">
-              <label htmlFor="end">End Date</label>
+            <div>
               <input
-                id="end"
-                type="datetime-local"
-                value={calendarEvent.end}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                disabled={calendarEvent.allDay}
+                id="recurring"
+                type="checkbox"
+                checked={calendarEvent.recurring}
+                onChange={handleCheckboxChange}
               ></input>
-              {touched.end === true ? (
-                <div className="alert">{errors.end}</div>
-              ) : null}
+              <label htmlFor="recurring">Recurring Event</label>
+              {calendarEvent.recurring ? recurringMarkup : null}
             </div>
-          </div>
-          <div>
-            <input
-              id="recurring"
-              type="checkbox"
-              checked={calendarEvent.recurring}
-              onChange={handleCheckboxChange}
-            ></input>
-            <label htmlFor="recurring">Recurring Event</label>
-            {calendarEvent.recurring ? recurringMarkup : null}
-          </div>
-          <button type="submit" disabled={status === STATUS.PENDING}>
-            Create Calendar Event
-          </button>
-        </form>
+            <button type="submit" disabled={status === STATUS.PENDING}>
+              Create Calendar Event
+            </button>
+          </OneInputAndSubmitForm>
+        </ErrorBoundary>
       </section>
     </div>
   );
