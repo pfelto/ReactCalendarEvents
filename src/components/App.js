@@ -1,15 +1,23 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react";
 import { emptyCalendar, STATUS, createICS } from "../utils";
+import { useForm } from "react-hook-form";
 
 export const App = () => {
   const [calendarEvent, setCalendarEvent] = useState(emptyCalendar);
-  const [status, setStatus] = useState(STATUS.IDLE);
-  const [touched, setTouched] = useState({});
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    getValues,
+  } = useForm();
+  //const [status, setStatus] = useState(STATUS.IDLE);
+  //const [touched, setTouched] = useState({});
+  const onSubmit = (data, e) => console.log(data, e);
+  const onError = (errors, e) => console.log(errors, e);
 
   //derived State
-  const errors = getErrors(calendarEvent);
-  const isValid = Object.keys(errors).length === 0;
+  //const isValid = Object.keys(errors).length === 0;
 
   function getErrors(calendarEventObject) {
     const result = {};
@@ -46,18 +54,22 @@ export const App = () => {
     setTouched((cur) => ({ ...cur, [e.target.id]: true }));
   }
 
-  function handleSubmit(e) {
+  /*
+  function onSubmit(e) {
     e.preventDefault();
+    
     setStatus(STATUS.PENDING);
     if (!isValid) {
       setStatus(STATUS.REJECTED);
       return;
     }
     setStatus(STATUS.RESOLVED);
+    
     createICS(calendarEvent);
   }
-
-  const recurringMarkup = (
+*/
+  /*
+const recurringMarkup = (
     <div className="recurring">
       <div>
         <h5>Frequency</h5>
@@ -97,8 +109,58 @@ export const App = () => {
       </div>
     </div>
   );
-
+*/
+  const endRequired = getValues("allDay") === true ? false : true;
+  console.log(endRequired);
   return (
+    <div className="App">
+      <div className="header">
+        <h1>Calendar Event Details</h1>
+      </div>
+      <section>
+        <form onSubmit={handleSubmit(onSubmit, onError)}>
+          <div className="dateSection">
+            <div className="dates">
+              <input
+                type="datetime-local"
+                {...register("start", { required: true })}
+              ></input>
+              {errors.start?.type === "required" && (
+                <div className="alert">Start Date is Required</div>
+              )}
+              <div>
+                <input type="checkbox" {...register("allDay")}></input>
+              </div>
+            </div>
+            <div className="dates">
+              <input
+                type="datetime-local"
+                {...register("end", { required: !getValues("allDay") })}
+              ></input>
+              {errors.end?.type === "required" && (
+                <div className="alert">End Date is Required</div>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              console.log(getValues()); // { test: "test-input", test1: "test1-input" }
+              console.log(getValues("start")); // "test-input"
+              console.log(getValues(["start", "allDay", "end"]));
+              // ["test-input", "test1-input"]
+            }}
+          >
+            Get Values
+          </button>
+          <input type="submit"></input>
+        </form>
+      </section>
+    </div>
+  );
+};
+
+/*
     <div className="App">
       <div className="header">
         <h1>Calendar Event Details</h1>
@@ -190,5 +252,4 @@ export const App = () => {
         </form>
       </section>
     </div>
-  );
-};
+*/
