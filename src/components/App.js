@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { ErrorBoundary } from "../ErrorBoundary";
 import { emptyCalendar, STATUS, createICS } from "../utils";
+import { GenericInput } from "./GenericInput";
 import { OneInputAndSubmitForm } from "./OneInputAndSubmitForm";
 
 export const App = () => {
@@ -77,25 +78,27 @@ export const App = () => {
       </div>
       <div>
         <h5>Interval</h5>
-        <label htmlFor="interval">Repeat every</label>
-        <input
+        <GenericInput
           id="interval"
           type="number"
           value={calendarEvent.recurrence.interval}
           onChange={handleNestedChange}
           min={1}
-        ></input>
+        >
+          Repeat every
+        </GenericInput>
       </div>
       <div>
         <h5>Count</h5>
-        <label htmlFor="count">Repeat for a number of occurrences</label>
-        <input
+        <GenericInput
           id="count"
           type="number"
           value={calendarEvent.recurrence.count}
           onChange={handleNestedChange}
           min={1}
-        ></input>
+        >
+          Repeat for a number of occurrences
+        </GenericInput>
       </div>
     </div>
   );
@@ -118,20 +121,22 @@ export const App = () => {
         ) : null}
         <ErrorBoundary>
           <OneInputAndSubmitForm handleSubmit={handleSubmit}>
-            <label htmlFor="title">Event Title</label>
-            <input
+            <GenericInput
               id="title"
               type="text"
               value={calendarEvent.title}
               onChange={handleChange}
-            ></input>
-            <label htmlFor="location">Event Location</label>
-            <input
+            >
+              Event Title
+            </GenericInput>
+            <GenericInput
               id="location"
               type="text"
               value={calendarEvent.location}
               onChange={handleChange}
-            ></input>
+            >
+              Event Location
+            </GenericInput>
             <label htmlFor="description">Event Description</label>
             <textarea
               id="description"
@@ -141,50 +146,54 @@ export const App = () => {
             ></textarea>
             <div className="dateSection">
               <div className="dates">
-                <label htmlFor="start">Start Date</label>
-                <input
+                <GenericInput
                   id="start"
                   type="datetime-local"
                   value={calendarEvent.start}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                ></input>
+                >
+                  Start Date
+                </GenericInput>
                 {touched.start === true ? (
                   <div className="alert">{errors.start}</div>
                 ) : null}
                 <div>
-                  <input
+                  <GenericInput
                     id="allDay"
                     type="checkbox"
                     checked={calendarEvent.allDay}
                     onChange={handleCheckboxChange}
-                  ></input>
-                  <label htmlFor="allDay">All Day Event</label>
+                  >
+                    All Day Event
+                  </GenericInput>
                 </div>
               </div>
               <div className="dates">
-                <label htmlFor="end">End Date</label>
-                <input
+                <GenericInput
                   id="end"
                   type="datetime-local"
                   value={calendarEvent.end}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   disabled={calendarEvent.allDay}
-                ></input>
+                >
+                  End Date
+                </GenericInput>
                 {touched.end === true ? (
                   <div className="alert">{errors.end}</div>
                 ) : null}
               </div>
             </div>
             <div>
-              <input
+              <GenericInput
                 id="recurring"
                 type="checkbox"
                 checked={calendarEvent.recurring}
                 onChange={handleCheckboxChange}
-              ></input>
-              <label htmlFor="recurring">Recurring Event</label>
+              >
+                Recurring
+              </GenericInput>
               {calendarEvent.recurring ? recurringMarkup : null}
             </div>
             <button type="submit" disabled={status === STATUS.PENDING}>

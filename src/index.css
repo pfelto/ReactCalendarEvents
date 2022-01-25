@@ -13,6 +13,7 @@ body {
   background-color: lightgray;
   padding-top: 15px;
   padding-bottom: 15px;
+  height: 100vh;
   border: 1px solid red;
 }
 
@@ -87,8 +88,8 @@ section form button {
   }
 }
 
-@media only screen and (min-height: 730px) {
+@media only screen and (max-height: 852px) and (max-width: 900px) {
   .App {
-    height: 100vh;
+    height: 100%;
   }
 }
