@@ -4,16 +4,26 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "webpack serve --config webpack.config.dev.js --port 3000",
+    "prebuild": "rimraf ./build && mkdir build",
+    "build": "webpack --config webpack.config.prod.js",
+    "postbuild": "http-server ./build",
     "test": "jest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cssnano": "^5.0.16",
     "datebook": "^7.0.8",
+    "http-server": "^14.1.0",
+    "mini-css-extract-plugin": "^2.5.3",
+    "npm-run-all": "^4.1.5",
+    "postcss-loader": "^6.2.1",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "rimraf": "^3.0.2",
+    "webpack-bundle-analyzer": "^4.5.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.8",

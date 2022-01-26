@@ -1,4 +1,5 @@
 //const webpack = require("webpack");
+const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const port = process.env.PORT || 3000;
@@ -8,9 +9,11 @@ module.exports = {
   mode: "development",
   entry: "./src/index.js",
   output: {
-    filename: "bundle.[hash].js",
+    path: path.resolve(__dirname, "build"),
+    publicPath: "/",
+    filename: "bundle.js",
   },
-  devtool: "inline-source-map",
+  devtool: "cheap-module-source-map",
   module: {
     rules: [
       //JSX rule
