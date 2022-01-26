@@ -1,117 +1,23 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from "react";
-import { emptyCalendar, STATUS, createICS } from "../utils";
+import React from "react";
+import { createICS } from "../utils";
 import { useForm } from "react-hook-form";
+import { Input } from "./Input";
 
 export const App = () => {
-  const [calendarEvent, setCalendarEvent] = useState(emptyCalendar);
   const {
     register,
     formState: { errors },
     handleSubmit,
-    getValues,
   } = useForm();
-  //const [status, setStatus] = useState(STATUS.IDLE);
-  //const [touched, setTouched] = useState({});
-  const onSubmit = (data, e) => console.log(data, e);
+
+  const onSubmit = (data, e) => {
+    e.preventDefault();
+    console.log(data, e);
+    createICS(data);
+  };
   const onError = (errors, e) => console.log(errors, e);
 
-  //derived State
-  //const isValid = Object.keys(errors).length === 0;
-
-  function getErrors(calendarEventObject) {
-    const result = {};
-    if (calendarEventObject.start === "")
-      result.start = "Start Date is required";
-    if (!calendarEventObject.allDay) {
-      if (calendarEventObject.end === "") result.end = "End Date is required";
-    }
-    return result;
-  }
-
-  function handleChange(e) {
-    setCalendarEvent((calendarEvent) => ({
-      ...calendarEvent,
-      [e.target.id]: e.target.value,
-    }));
-  }
-
-  function handleCheckboxChange(e) {
-    setCalendarEvent((calendarEvent) => ({
-      ...calendarEvent,
-      [e.target.id]: e.target.checked,
-    }));
-  }
-
-  function handleNestedChange(e) {
-    let newObject = { ...calendarEvent };
-    newObject.recurrence = { ...calendarEvent.recurrence };
-    newObject.recurrence[e.target.id] = e.target.value;
-    setCalendarEvent(newObject);
-  }
-
-  function handleBlur(e) {
-    setTouched((cur) => ({ ...cur, [e.target.id]: true }));
-  }
-
-  /*
-  function onSubmit(e) {
-    e.preventDefault();
-    
-    setStatus(STATUS.PENDING);
-    if (!isValid) {
-      setStatus(STATUS.REJECTED);
-      return;
-    }
-    setStatus(STATUS.RESOLVED);
-    
-    createICS(calendarEvent);
-  }
-*/
-  /*
-const recurringMarkup = (
-    <div className="recurring">
-      <div>
-        <h5>Frequency</h5>
-        <label htmlFor="frequency">Repeat this event</label>
-        <select
-          id="frequency"
-          value={calendarEvent.recurrence.frequency}
-          onChange={handleNestedChange}
-        >
-          <option value="DAILY">DAILY</option>
-          <option value="WEEKLY">WEEKLY</option>
-          <option value="MONTHLY">MONTHLY</option>
-          <option value="YEARLY">YEARLY</option>
-        </select>
-      </div>
-      <div>
-        <h5>Interval</h5>
-        <label htmlFor="interval">Repeat every</label>
-        <input
-          id="interval"
-          type="number"
-          value={calendarEvent.recurrence.interval}
-          onChange={handleNestedChange}
-          min={1}
-        ></input>
-      </div>
-      <div>
-        <h5>Count</h5>
-        <label htmlFor="count">Repeat for a number of occurrences</label>
-        <input
-          id="count"
-          type="number"
-          value={calendarEvent.recurrence.count}
-          onChange={handleNestedChange}
-          min={1}
-        ></input>
-      </div>
-    </div>
-  );
-*/
-  const endRequired = getValues("allDay") === true ? false : true;
-  console.log(endRequired);
   return (
     <div className="App">
       <div className="header">
@@ -119,41 +25,51 @@ const recurringMarkup = (
       </div>
       <section>
         <form onSubmit={handleSubmit(onSubmit, onError)}>
+          <Input
+            label="Event Title"
+            id="title"
+            type="text"
+            register={register}
+          ></Input>
+          <Input
+            label="Event Location"
+            id="location"
+            type="text"
+            register={register}
+          ></Input>
+          <Input
+            label="Event Description"
+            id="description"
+            type="text"
+            register={register}
+          ></Input>
           <div className="dateSection">
             <div className="dates">
-              <input
+              <Input
+                label="Event Start"
+                id="start"
                 type="datetime-local"
-                {...register("start", { required: true })}
-              ></input>
+                register={register}
+                required
+              ></Input>
               {errors.start?.type === "required" && (
                 <div className="alert">Start Date is Required</div>
               )}
-              <div>
-                <input type="checkbox" {...register("allDay")}></input>
-              </div>
             </div>
             <div className="dates">
-              <input
+              <Input
+                label="Event End"
+                id="end"
                 type="datetime-local"
-                {...register("end", { required: !getValues("allDay") })}
-              ></input>
+                register={register}
+                required
+              ></Input>
               {errors.end?.type === "required" && (
                 <div className="alert">End Date is Required</div>
               )}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              console.log(getValues()); // { test: "test-input", test1: "test1-input" }
-              console.log(getValues("start")); // "test-input"
-              console.log(getValues(["start", "allDay", "end"]));
-              // ["test-input", "test1-input"]
-            }}
-          >
-            Get Values
-          </button>
-          <input type="submit"></input>
+          <button type="submit">Create Calendar Event</button>
         </form>
       </section>
     </div>
@@ -177,27 +93,7 @@ const recurringMarkup = (
           </div>
         ) : null}
         <form onSubmit={handleSubmit}>
-          <label htmlFor="title">Event Title</label>
-          <input
-            id="title"
-            type="text"
-            value={calendarEvent.title}
-            onChange={handleChange}
-          ></input>
-          <label htmlFor="location">Event Location</label>
-          <input
-            id="location"
-            type="text"
-            value={calendarEvent.location}
-            onChange={handleChange}
-          ></input>
-          <label htmlFor="description">Event Description</label>
-          <textarea
-            id="description"
-            style={{ resize: "none" }}
-            value={calendarEvent.description}
-            onChange={handleChange}
-          ></textarea>
+          
           <div className="dateSection">
             <div className="dates">
               <label htmlFor="start">Start Date</label>

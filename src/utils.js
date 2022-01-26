@@ -57,9 +57,9 @@ export function createICS(event) {
       };
     } else {
       config = {
-        title: event.title,
-        location: event.location,
-        description: event.description,
+        title: event.title || "",
+        location: event.location || "",
+        description: event.description || "",
         start: new Date(event.start),
         end: new Date(event.start),
       };
