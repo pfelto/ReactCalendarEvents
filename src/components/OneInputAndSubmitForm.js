@@ -5,6 +5,8 @@ export const OneInputAndSubmitForm = ({ handleSubmit, children }) => {
   let submitButton = null;
   let inputTextField = false;
 
+  console.log(children);
+
   if (!children.length) {
     throw new Error("This Form requires more than 1 child");
   }
