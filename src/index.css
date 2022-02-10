@@ -3,6 +3,7 @@
 }
 
 body {
+  box-sizing: border-box;
   margin: 0;
 }
 
@@ -13,8 +14,7 @@ body {
   background-color: lightgray;
   padding-top: 15px;
   padding-bottom: 15px;
-  height: 100vh;
-  border: 1px solid red;
+  min-height: 100vh;
 }
 
 .header {
